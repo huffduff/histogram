@@ -8,6 +8,7 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
+// Indexable defines the constraints for Histogram values
 type Indexable interface {
 	constraints.Unsigned | constraints.Signed | constraints.Float
 }
@@ -43,7 +44,7 @@ type Histogram[T Indexable] struct {
 	Buckets []Bucket[T]
 }
 
-// Bucket finds the index of the Bucket set that a value falls into
+// Index finds the index of the Bucket set that a value falls into
 func (h Histogram[T]) Index(val T) (int, error) {
 	last := len(h.Buckets) - 1
 	for i, b := range h.Buckets {
@@ -66,8 +67,8 @@ func newHistogram[T Indexable](buckets []Bucket[T], data []T) Histogram[T] {
 			if bucket.within(val, i == last) {
 				h.Count++
 				h.Buckets[i].Count++
-				h.Min = _min(h.Min, h.Buckets[i].Count)
-				h.Max = _max(h.Max, h.Buckets[i].Count)
+				h.Min = min(h.Min, h.Buckets[i].Count)
+				h.Max = max(h.Max, h.Buckets[i].Count)
 				break
 			}
 		}
@@ -76,7 +77,7 @@ func newHistogram[T Indexable](buckets []Bucket[T], data []T) Histogram[T] {
 	return h
 }
 
-// Create creates an histogram partioning input over `bins` buckets.
+// Create creates an histogram partioning input over `bins` buckets
 func Create[T Indexable](bins int, input []T) Histogram[T] {
 	count := len(input)
 
@@ -88,28 +89,28 @@ func Create[T Indexable](bins int, input []T) Histogram[T] {
 		return i < j
 	})
 
-	min := input[0]
-	max := input[len(input)-1]
+	minValue := input[0]
+	maxValue := input[len(input)-1]
 
-	scale := float64(max-min) / float64(bins)
+	scale := float64(maxValue-minValue) / float64(bins)
 
-	if min == max {
+	if minValue == maxValue {
 		bins = 1
 	}
 
 	buckets := make([]Bucket[T], bins)
 	for i := 0; i < bins; i++ {
 		buckets[i] = Bucket[T]{
-			Min: T(float64(i)*scale) + min,
-			Max: T(float64(i+1)*scale) + min,
+			Min: T(float64(i)*scale) + minValue,
+			Max: T(float64(i+1)*scale) + minValue,
 		}
 	}
 
 	return newHistogram(buckets, input)
 }
 
-// CreateRanged creates an histogram by custom range, like elasticsearch data histogram query(left closed)
-func CreateRanged[T Indexable](min, max, interval T, input []T) Histogram[T] {
+// CreateRanged creates a histogram by custom range
+func CreateRanged[T Indexable](minValue, maxValue, interval T, input []T) Histogram[T] {
 	if interval == 0 {
 		return Histogram[T]{}
 	}
@@ -119,16 +120,16 @@ func CreateRanged[T Indexable](min, max, interval T, input []T) Histogram[T] {
 	})
 
 	bins := 1
-	if max != min {
-		bins = int(float64(max-min) / float64(interval))
+	if maxValue != minValue {
+		bins = int(float64(maxValue-minValue) / float64(interval))
 	}
 
 	buckets := make([]Bucket[T], bins)
 
 	for i := 0; i < bins; i++ {
 		buckets[i] = Bucket[T]{
-			Min: min + (interval * T(i)),
-			Max: _min(min+(interval*T(i+1)), max),
+			Min: minValue + (interval * T(i)),
+			Max: min(minValue+(interval*T(i+1)), maxValue),
 		}
 	}
 
@@ -165,14 +166,14 @@ func logbase[T Indexable](a T, base float64) float64 {
 	return math.Log2(float64(a)) / math.Log2(base)
 }
 
-func _min[T Indexable](a T, b T) T {
+func min[T Indexable](a T, b T) T {
 	if a < b {
 		return a
 	}
 	return b
 }
 
-func _max[T Indexable](a T, b T) T {
+func max[T Indexable](a T, b T) T {
 	if a < b {
 		return b
 	}

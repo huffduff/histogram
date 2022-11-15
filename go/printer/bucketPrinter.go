@@ -45,9 +45,23 @@ func (p bucketPrinter[T]) Bar(width float64) string {
 	return strings.Repeat("█", int(size)) + string(rune(9615-charIdx))
 }
 
+// Fprint writes a histogram to an io.Writer using the format strings provided
+// The format strings use the text/template syntax and write to a text/tabwriter
+// multiple format strings are joined in order using \t to create aligned columns
+// and each line automatically gets a \n, so no need to add an EOL.
+// Values passed to the template:
+//
+//	.Total : the total number of records in the histogram (int)
+//	.Pct   : percentage represesented by a bucket value relative to .Total (float64)
+//	.Min   : lower bound of the bucket, inclusive
+//	.Max   : higher bound of the bucket, exclusive except on the final bucket
+//	.Count : count of values in the bucket
+//
+// [formatting.go](.formatting.go) contains some helper functions for common formats.
+// If no formats are passed, it uses `IntFormat(5)` by default.
 func Fprint[T histogram.Indexable](w io.Writer, h histogram.Histogram[T], formats ...string) error {
 	if len(formats) == 0 {
-		formats = StandardFormat(5)
+		formats = IntFormat(5)
 	}
 	return fprintf(w, h, formats)
 }

@@ -21,7 +21,7 @@ func ExampleFprint() {
 		// 1000,
 	}
 	hist := histogram.Create(9, data)
-	Fprint(os.Stdout, hist)
+	Fprint(os.Stdout, hist, FloatFormat(5)...)
 	// Output:
 	// 0.1-0.2  5%   ██▋                         1
 	// 0.2-0.3  25%  ████████████▋               5
