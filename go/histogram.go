@@ -15,6 +15,7 @@ type Indexable interface {
 
 // Bucket counts a partion of values.
 type Bucket[T Indexable] struct {
+	inclusiveMax bool
 	// Min is the low, inclusive bound of the bucket.
 	Min T
 	// Max is the high, exclusive bound of the bucket. If
@@ -25,8 +26,8 @@ type Bucket[T Indexable] struct {
 	Count int
 }
 
-func (b Bucket[T]) within(val T, inclusiveMax bool) bool {
-	if inclusiveMax {
+func (b Bucket[T]) within(val T) bool {
+	if b.inclusiveMax {
 		return b.Min <= val && val <= b.Max
 	}
 	return b.Min <= val && val < b.Max
@@ -46,9 +47,8 @@ type Histogram[T Indexable] struct {
 
 // Index finds the index of the Bucket set that a value falls into
 func (h Histogram[T]) Index(val T) (int, error) {
-	last := len(h.Buckets) - 1
 	for i, b := range h.Buckets {
-		if b.within(val, last == i) {
+		if b.within(val) {
 			return i, nil
 		}
 	}
@@ -57,14 +57,15 @@ func (h Histogram[T]) Index(val T) (int, error) {
 }
 
 func newHistogram[T Indexable](buckets []Bucket[T], data []T) Histogram[T] {
+	// mark the final bucket inclusive
+	buckets[len(buckets)-1].inclusiveMax = true
 	h := Histogram[T]{
 		Buckets: buckets,
 	}
 
-	last := len(buckets) - 1
 	for _, val := range data {
 		for i, bucket := range h.Buckets {
-			if bucket.within(val, i == last) {
+			if bucket.within(val) {
 				h.Count++
 				h.Buckets[i].Count++
 				h.Min = min(h.Min, h.Buckets[i].Count)
@@ -79,9 +80,7 @@ func newHistogram[T Indexable](buckets []Bucket[T], data []T) Histogram[T] {
 
 // Create creates an histogram partioning input over `bins` buckets
 func Create[T Indexable](bins int, input []T) Histogram[T] {
-	count := len(input)
-
-	if count == 0 || bins == 0 {
+	if len(input) == 0 || bins == 0 {
 		return Histogram[T]{}
 	}
 
