@@ -27,22 +27,23 @@ func (p bucketPrinter[T]) Pct() float64 {
 	return float64(p.Count) / float64(total) * 100.0
 }
 
-func (p bucketPrinter[T]) scale() float64 {
-	if p.Total() == 0 {
-		return 0
+func (p bucketPrinter[T]) Bar(maxWidth int) string {
+	if p.Count == 0 {
+		// return the shortest possible bar
+		return string(rune(9615))
 	}
-	if p.h.Min == p.h.Max {
-		return 1
-	}
-	return float64(p.Count-p.h.Min) / float64(p.h.Max-p.h.Min)
-}
+	scale := float64(maxWidth) / float64(p.h.Max)
 
-func (p bucketPrinter[T]) Bar(width float64) string {
-	size := p.scale() * width
-	decimalf := (size - math.Floor(size)) * 10.0
-	decimali := math.Floor(decimalf)
-	charIdx := int(decimali / 10.0 * 8.0)
-	return strings.Repeat("█", int(size)) + string(rune(9615-charIdx))
+	all := float64(p.Count) * scale
+	full := int(all)
+	decimal := math.Mod(all, 1) * 10
+	partial := int(decimal / 10 * 8)
+
+	bar := strings.Repeat(string(rune(9608)), full)
+	if partial > 0 {
+		bar += string(rune(9615 - partial))
+	}
+	return bar
 }
 
 // Fprint writes a histogram to an io.Writer using the format strings provided

@@ -177,5 +177,5 @@ func max[T Indexable](a T, b T) T {
 	if a < b {
 		return b
 	}
-	return b
+	return a
 }

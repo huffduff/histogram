@@ -12,7 +12,7 @@ func TestCreate(t *testing.T) {
 			0.2, 0.21, 0.22, 0.22,
 			0.3,
 			0.4,
-			0.5, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57, 0.58,
+			0.5, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57, 0.58, 0.59,
 			0.6,
 			// 0.7 is empty
 			0.8,
@@ -25,12 +25,20 @@ func TestCreate(t *testing.T) {
 			t.Errorf("%d != %d", len(hist.Buckets), 9)
 		}
 
-		idx, err := hist.Index(1.0)
+		if hist.Min != 0 {
+			t.Errorf("%d != %d", hist.Min, 0)
+		}
+
+		if hist.Max != 10 {
+			t.Errorf("%d != %d", hist.Max, 9)
+		}
+
+		idx, err := hist.Index(0.55)
 		if err != nil {
 			t.Error(err)
 		}
-		if idx != 8 {
-			t.Errorf("bucket %d != %d", idx, 8)
+		if idx != 4 {
+			t.Errorf("bucket %d != %d", idx, 4)
 		}
 	})
 
