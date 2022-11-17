@@ -10,7 +10,6 @@ func TestCreate(t *testing.T) {
 		data := []float64{
 			0.1,
 			0.2, 0.21, 0.22, 0.22,
-			0.3,
 			0.4,
 			0.5, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57, 0.58, 0.59,
 			0.6,
@@ -18,6 +17,7 @@ func TestCreate(t *testing.T) {
 			0.8,
 			0.9,
 			1.0,
+			0.3, // intentionally out of order
 		}
 		hist := Create(9, data)
 
@@ -51,7 +51,6 @@ func TestCreate(t *testing.T) {
 			time.Millisecond * 221,
 			time.Millisecond * 222,
 			time.Millisecond * 223,
-			time.Millisecond * 300,
 			time.Millisecond * 400,
 			time.Millisecond * 500,
 			time.Millisecond * 510,
@@ -67,6 +66,7 @@ func TestCreate(t *testing.T) {
 			time.Millisecond * 800,
 			time.Millisecond * 900,
 			time.Millisecond * 1000,
+			time.Millisecond * 300, // intentionally out of order
 		}
 
 		hist := Create(9, data)
@@ -89,13 +89,13 @@ func TestCreateRanged(t *testing.T) {
 	data := []float64{
 		1,
 		2, 2.1, 2.5, 2.8,
-		3,
 		5,
 		5.5,
 		6.5,
 		6.6,
 		7,
 		10,
+		3, // intentionally out of order
 	}
 
 	t.Run("includeRange", func(t *testing.T) {
@@ -138,7 +138,6 @@ func TestCreateLog(t *testing.T) {
 	data := []float64{
 		1,
 		2, 2.1, 2.5, 2.8,
-		3,
 		5,
 		5.5,
 		6.5,
@@ -146,6 +145,7 @@ func TestCreateLog(t *testing.T) {
 		7,
 		10,
 		100,
+		3, // intenionally out of order
 	}
 	t.Run("binary", func(t *testing.T) {
 		hist := CreateLog(2, data)

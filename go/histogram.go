@@ -85,7 +85,7 @@ func Create[T Indexable](bins int, input []T) Histogram[T] {
 	}
 
 	sort.SliceStable(input, func(i, j int) bool {
-		return i < j
+		return input[i] < input[j]
 	})
 
 	minValue := input[0]
@@ -115,7 +115,7 @@ func CreateRanged[T Indexable](minValue, maxValue, interval T, input []T) Histog
 	}
 
 	sort.SliceStable(input, func(i, j int) bool {
-		return i < j
+		return input[i] < input[j]
 	})
 
 	bins := 1
@@ -143,7 +143,7 @@ func CreateLog[T Indexable](power float64, input []T) Histogram[T] {
 	}
 
 	sort.SliceStable(input, func(i, j int) bool {
-		return i < j
+		return input[i] < input[j]
 	})
 
 	minValue := input[0]
